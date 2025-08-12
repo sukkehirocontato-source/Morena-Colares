@@ -29,7 +29,7 @@
     transition: background 300ms ease;
   }
 
-  /* girassóis decorativos (serão preenchidos por JS) */
+  /* girassóis decorativos (preenchidos por JS) */
   .sunflower {
     position:fixed;
     width:96px;
@@ -140,21 +140,24 @@ onde a calma da noite encontra o calor da flor.
 
     <div class="player" aria-label="Player de áudio">
       <button class="btn-play" id="playBtn" aria-pressed="false">▶️ Ouvir declaração</button>
-      <!-- fallback nativo visível para controle manual -->
       <div style="display:flex;align-items:center;gap:8px;">
-        <audio id="audioPlayer" preload="none" src="assets/morena.wav"></audio>
-        <small style="font-size:0.9rem; opacity:0.9;">(player nativo disponível se necessário)</small>
+        <audio id="audioPlayer" preload="none">
+          <source src="assets/morena.mp3" type="audio/mpeg">
+          <source src="assets/morena.wav" type="audio/wav">
+          Seu navegador não suporta reprodução de áudio.
+        </audio>
+        <small style="font-size:0.9rem; opacity:0.9;">(use controles nativos se necessário)</small>
       </div>
     </div>
   </main>
 
 <script>
-/*
-  Este script tenta carregar arquivos de imagens com extensões comuns dentro de assets/
-  (starry + sun1 + sun2). Usa o primeiro arquivo que carregar com sucesso.
-*/
+/* ---------- Helpers para localizar imagens com extensões comuns ---------- */
+function candidatesFor(base){
+  const exts = ['.jpg','.jpeg','.png','.webp','.gif'];
+  return exts.map(ext => base + ext);
+}
 
-/* utilitária: encontra o primeiro arquivo válido entre candidates (retorna URL ou null) */
 function firstAvailable(candidates){
   return new Promise(resolve => {
     if(!candidates || candidates.length === 0) return resolve(null);
@@ -169,33 +172,24 @@ function firstAvailable(candidates){
   });
 }
 
-/* monta lista de possíveis nomes/exetnsões para um base (ex.: 'assets/starry') */
-function candidatesFor(base){
-  const exts = ['.jpg','.jpeg','.png','.webp','.gif'];
-  return exts.map(ext => base + ext);
-}
-
-/* tenta aplicar background e girassóis */
+/* ---------- Carrega fundo e girassóis a partir de assets/ ---------- */
 (async function loadAssets(){
-  // estrela (fundo)
+  // fundo (assets/starry.*)
   const bgCandidates = candidatesFor('assets/starry');
   const bgUrl = await firstAvailable(bgCandidates);
-
   if(bgUrl){
     document.body.style.backgroundImage = `url("${bgUrl}")`;
     document.body.style.backgroundSize = 'cover';
     document.body.style.backgroundPosition = 'center';
     document.body.style.backgroundAttachment = 'fixed';
   } else {
-    // se nada encontrado, mantemos o gradiente (já definido no CSS)
     console.warn('Imagem de fundo não encontrada em assets/starry.* — usando gradiente fallback.');
   }
 
-  // girassóis: tentamos sun1 e sun2 (se existir, clonamos para s3/s4 para compor)
+  // girassóis
   const s1 = await firstAvailable(candidatesFor('assets/sun1'));
   const s2 = await firstAvailable(candidatesFor('assets/sun2'));
 
-  // se encontrou, aplica nos elementos; se não, mantém sem background (eles ficarão invisíveis)
   const elS1 = document.querySelector('.s1');
   const elS2 = document.querySelector('.s2');
   const elS3 = document.querySelector('.s3');
@@ -204,7 +198,6 @@ function candidatesFor(base){
   if(s1) elS1.style.backgroundImage = `url("${s1}")`;
   if(s2) elS2.style.backgroundImage = `url("${s2}")`;
 
-  // clonar opções: se só tiver um girassol, usa ele nos outros também
   if(!s1 && s2){
     elS1.style.backgroundImage = `url("${s2}")`;
     elS3.style.backgroundImage = `url("${s2}")`;
@@ -214,17 +207,15 @@ function candidatesFor(base){
     elS3.style.backgroundImage = `url("${s1}")`;
     elS4.style.backgroundImage = `url("${s1}")`;
   } else if(s1 && s2){
-    // distribuir: s1->s1/s3, s2->s2/s4
     elS3.style.backgroundImage = `url("${s1}")`;
     elS4.style.backgroundImage = `url("${s2}")`;
   } else {
-    console.warn('Imagens de girassol não encontradas em assets/sun1.* ou assets/sun2.* — decor invisível.');
-    // opcional: esconder os elementos se nada encontrado
     [elS1,elS2,elS3,elS4].forEach(el => { if(el) el.style.display = 'none'; });
+    console.warn('Imagens de girassol não encontradas em assets/sun1.* ou assets/sun2.* — decor invisível.');
   }
 })();
 
-/* PLAYER: usa assets/morena.wav (você disse que o .wav está na pasta assets) */
+/* ---------- Player ---------- */
 const audio = document.getElementById('audioPlayer');
 const btn = document.getElementById('playBtn');
 
@@ -239,14 +230,11 @@ function updateBtn(){
 }
 
 btn.addEventListener('click', () => {
-  if(!audio || !audio.src){
-    alert('Áudio não encontrado. Verifique se assets/morena.wav foi enviado corretamente.');
-    return;
-  }
+  if(!audio) return alert('Áudio não encontrado.');
   if(audio.paused){
     audio.play().catch(err => {
       console.error('Erro ao reproduzir:', err);
-      alert('Erro ao reproduzir o áudio (veja console).');
+      alert('Erro ao reproduzir o áudio — tente abrir diretamente assets/morena.mp3 para testar.');
     });
   } else {
     audio.pause();
@@ -257,7 +245,6 @@ btn.addEventListener('click', () => {
 audio.addEventListener('play', updateBtn);
 audio.addEventListener('pause', updateBtn);
 audio.addEventListener('ended', updateBtn);
-
 </script>
 </body>
 </html>
