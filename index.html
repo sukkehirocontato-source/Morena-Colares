@@ -34,6 +34,7 @@
 
   <main class="card" role="main" aria-labelledby="title">
     <h1 id="title">Noite &amp; Girassóis — Uma pequena declaração</h1>
+
     <div class="poema">
 Na curva azul do céu girado por Van Gogh,  
 minhas memórias acendem como estrelas.  
@@ -45,20 +46,22 @@ guardam no centro o sol que já passou.
 Que essa tela seja ponte: do teu olhar ao meu,  
 onde a calma da noite encontra o calor da flor.
     </div>
+
     <div class="meta">Manaus, 11 de agosto de 2025 — <strong>Colares</strong></div>
 
     <div class="player" aria-label="Player de áudio">
       <button class="btn-play" id="playBtn" aria-pressed="false">▶️ Ouvir declaração</button>
 
       <div class="audio-controls">
-        <!-- ATENÇÃO: caminho EXATO com M maiúsculo (confere com o nome no repositório) -->
+        <!-- Áudio na raiz: morena.mp3 -->
         <audio id="audioPlayer" preload="auto" controls>
+          <source src="morena.mp3" type="audio/mpeg">
+          <source src="assets/morena.mp3" type="audio/mpeg">
           <source src="assets/Morena.mp3" type="audio/mpeg">
-          <source src="assets/Morena.wav" type="audio/wav">
           Seu navegador não suporta reprodução de áudio.
         </audio>
 
-        <a id="audioLink" href="assets/Morena.mp3" target="_blank" rel="noopener">Abrir áudio direto</a>
+        <a id="audioLink" href="morena.mp3" target="_blank" rel="noopener">Abrir áudio direto</a>
       </div>
 
       <span class="hint">Se não ouvir nada: verifique volume do dispositivo e clique em "Abrir áudio direto".</span>
@@ -66,7 +69,7 @@ onde a calma da noite encontra o calor da flor.
   </main>
 
 <script>
-/* --- carregamento de imagens (mantive a lógica automática) --- */
+/* --- procura imagens assets/starry.*, sun1.*, sun2.* e aplica (mantém fallback) --- */
 function candidatesFor(base){ const exts=['.jpg','.jpeg','.png','.webp','.gif']; return exts.map(e=>base+e); }
 function firstAvailable(candidates){ return new Promise(resolve=>{ if(!candidates||!candidates.length) return resolve(null); let rem=candidates.length, found=false; candidates.forEach(url=>{ const i=new Image(); i.onload=()=>{ if(!found){ found=true; resolve(url);} }; i.onerror=()=>{ rem--; if(rem===0&&!found) resolve(null); }; i.src=url; }); }); }
 (async function(){ const bg = await firstAvailable(candidatesFor('assets/starry')); if(bg){ document.body.style.backgroundImage=`url("${bg}")`; document.body.style.backgroundSize='cover'; document.body.style.backgroundPosition='center'; document.body.style.backgroundAttachment='fixed'; } else console.warn('Fallback: starry not found.'); const s1 = await firstAvailable(candidatesFor('assets/sun1')); const s2 = await firstAvailable(candidatesFor('assets/sun2')); const elS1=document.querySelector('.s1'), elS2=document.querySelector('.s2'), elS3=document.querySelector('.s3'), elS4=document.querySelector('.s4'); if(s1) elS1.style.backgroundImage=`url("${s1}")`; if(s2) elS2.style.backgroundImage=`url("${s2}")`; if(!s1 && s2){ elS1.style.backgroundImage=`url("${s2}")`; elS3.style.backgroundImage=`url("${s2}")`; elS4.style.backgroundImage=`url("${s2}")`; } else if(s1 && !s2){ elS2.style.backgroundImage=`url("${s1}")`; elS3.style.backgroundImage=`url("${s1}")`; elS4.style.backgroundImage=`url("${s1}")`; } else if(s1 && s2){ elS3.style.backgroundImage=`url("${s1}")`; elS4.style.backgroundImage=`url("${s2}")`; } else { [elS1,elS2,elS3,elS4].forEach(el=>el && (el.style.display='none')); } })();
@@ -100,8 +103,7 @@ if(audio){
   audio.addEventListener('canplay', ()=>console.log('Audio: canplay'));
   audio.addEventListener('canplaythrough', ()=>console.log('Audio: canplaythrough'));
 }
-/* log do src exibido (útil) */
-console.log('Audio src usado: ', document.getElementById('audioPlayer')?.currentSrc || 'nenhum');
+console.log('Observação: audio element currentSrc =', audio?.currentSrc || 'nenhum');
 </script>
 </body>
 </html>
